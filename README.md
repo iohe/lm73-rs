@@ -2,8 +2,8 @@
 
 [![crates.io](https://img.shields.io/crates/v/lm73.svg)](https://crates.io/crates/lm73)
 [![Docs](https://docs.rs/lm73/badge.svg)](https://docs.rs/lm73)
-[![Build Status](https://travis-ci.org/eldruin/lm73-rs.svg?branch=master)](https://travis-ci.org/iohe/lm73-rs)
-[![Coverage Status](https://coveralls.io/repos/github/eldruin/lm73-rs/badge.svg?branch=master)](https://coveralls.io/github/iohe/lm73-rs?branch=master)
+[![Build Status](https://travis-ci.org/iohe/lm73-rs.svg?branch=master)](https://travis-ci.org/iohe/lm73-rs)
+[![Coverage Status](https://coveralls.io/repos/github/iohe/lm73-rs/badge.svg?branch=master)](https://coveralls.io/github/iohe/lm73-rs?branch=master)
 ![Maintenance Intention](https://img.shields.io/badge/maintenance-actively--developed-brightgreen.svg)
 
 This is based on LM75 work of Diego Barrios Romero
