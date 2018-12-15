@@ -111,11 +111,10 @@
 //! # }
 //! ```
 
-//#![deny(missing_docs, unsafe_code, warnings)]
-//#![no_std]
+#![deny(missing_docs, unsafe_code, warnings)]
+#![no_std]
 
 extern crate embedded_hal as hal;
-extern crate i2cdev;
 
 use hal::blocking::i2c;
 

@@ -27,12 +27,15 @@ maintenance = { status = "actively-developed" }
 
 [dependencies]
 embedded-hal = "0.2"
-i2cdev = "0.4"
-fpa = "0.1"
 
 [dependencies.cast]
 default-features = false
 version = "0.2.0"
+
+[dependencies.fpa]
+default-features = false
+version = "0.1"
+
 
 [dev-dependencies]
 embedded-hal-mock = "0.2"

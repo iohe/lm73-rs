@@ -1,4 +1,5 @@
 #![deny(unsafe_code)]
+
 extern crate cast;
 extern crate fpa;
 
