@@ -320,7 +320,7 @@ where
     /// Enable the sensor (default state).
     pub fn enable(&mut self) -> Result<(), Error<E>> {
         let csr = self.csr;
-        let _result = self.write_csr(csr)?;
+        self.write_csr(csr)?;
 
         let config = self.config;
         self.write_config(config.with_low(ConfigBitFlags::PD))
@@ -393,7 +393,7 @@ where
             return Err(Error::InvalidInputData);
         }
         let (msb, lsb) = conversion::convert_temp_to_register(temperature);
-        let _data: u16 = (msb as u16 * 256 as u16 + lsb as u16).into();
+        let _data: u16 = u16::from(msb) * 256 + u16::from(lsb);
         self.i2c
             .write(Register::T_HIGH, &[msb, lsb])
             .map_err(Error::I2C)
@@ -405,7 +405,7 @@ where
             return Err(Error::InvalidInputData);
         }
         let (msb, lsb) = conversion::convert_temp_to_register(temperature);
-        let _data: u16 = (msb as u16 * 256 as u16 + lsb as u16).into();
+        let _data: u16 = u16::from(msb) * 256 + u16::from(lsb);
         self.i2c
             .write(Register::T_LOW, &[msb, lsb])
             .map_err(Error::I2C)
@@ -448,7 +448,7 @@ where
             .write_read(self.address, &[Register::IDENTIFICATION], &mut data)
             .map_err(Error::I2C)?;
 
-        Ok( (data[0] as u16) << 8 + data[1])
+        Ok( (u16::from(data[0]) << 8) + u16::from(data[1]))
     }
 }
 
