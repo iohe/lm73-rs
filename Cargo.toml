@@ -1,12 +1,12 @@
 [package]
 name = "lm73"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Ioan Herisanu ioan.herisanu.dev@gmail.com>"]
 repository = "https://github.com/iohe/lm73-rs"
 license = "MIT OR Apache-2.0"
 description = "Platform-agnostic Rust driver for the LM73 temperature sensor and thermal watchdog."
 readme = "README.md"
-keywords = ["temperature", "sensor", "i2c", "driver", "embedded-hal-driver"]
+keywords = ["temperature", "sensor", "i2c", "driver", "embedded-hal-driver", "fpa"]
 categories = ["embedded", "hardware-support", "no-std"]
 homepage = "https://github.com/iohe/lm73-rs"
 documentation = "https://docs.rs/lm73"
@@ -18,6 +18,7 @@ include = [
     "/LICENSE-MIT",
     "/LICENSE-APACHE",
 ]
+edition = "2018"
 
 [badges]
 travis-ci = { repository = "iohe/lm73-rs", branch = "master" }
@@ -27,10 +28,17 @@ maintenance = { status = "actively-developed" }
 [dependencies]
 embedded-hal = "0.2"
 i2cdev = "0.4"
+fpa = "0.1"
+
+[dependencies.cast]
+default-features = false
+version = "0.2.0"
 
 [dev-dependencies]
 embedded-hal-mock = "0.2"
 i2cdev = "0.4"
+linux-embedded-hal = "0.2"
+
 
 [profile.release]
 lto = true

@@ -6,58 +6,24 @@
 //! This driver allows you to:
 //! - Enable/disable the device.
 //! - Read the temperature.
-//! - Set the fault queue.
 //! - Set the OS temperature.
-//! - Set the hysteresis temperature.
 //! - Set the OS operation mode.
-//! - Set the OS polarity.
 //!
 //! ## The device
 //!
 //! The lm73 temperature sensor includes a delta-sigma analog-to-digital
 //! converter, and a digital overtemperature detector. The host can
 //! query the lm73 through its I2C interface to read temperature at any
-//! time. The open-drain overtemperature output (OS) sinks current when
-//! the programmable temperature limit is exceeded.
-//! The OS output operates in either of two modes, comparator or
-//! interrupt. The host controls the temperature at which the alarm is
-//! asserted (TOS) and the hysteresis temperature below which the alarm
-//! condition is not valid (THYST). Also, the lm73's TOS and THYST
-//! registers can be read by the host. The address of the lm73 is set
-//! with three pins to allow multiple devices to work on the same bus.
-//! Power-up is in comparator mode, with defaults of TOS= +80ºC and
-//! THYST= +73ºC. The 3.0V to 5.5V supply voltage range, low supply
-//! current, and I2C interface make the lm73 ideal for many applications
-//! in thermal management and protection.
-//!
+//! time. 
+//! 
 //! Datasheet:
 //! - [lm73](https://datasheets.maximintegrated.com/en/ds/lm73.pdf)
 //!
-//! This driver is also compatible with at least [lm73A], [lm73B, lm73C],
-//! [AT30TS73A], [DS1773], [DS73], [DS7305], [G731], [MAX7300/1/2/3/4],
-//! [MAX6625], [MCP9800/1/2/3], [STDS73], [TCN73].
-//!
-//! [AT30TS73A]: http://ww1.microchip.com/downloads/en/DeviceDoc/Atmel-8839-DTS-AT30TS73A-Datasheet.pdf
-//! [DS1773]: https://datasheets.maximintegrated.com/en/ds/DS1773-DS1773R.pdf
-//! [DS73]: https://datasheets.maximintegrated.com/en/ds/DS73.pdf
-//! [DS7305]: https://datasheets.maximintegrated.com/en/ds/DS7305.pdf
-//! [G731]: http://www.gmt.com.tw/product/datasheet/EDS-731.pdf
-//! [lm73A]: https://www.nxp.com/docs/en/data-sheet/lm73A.pdf
-//! [lm73B, lm73C]: http://www.ti.com/lit/ds/symlink/lm73b.pdf
-//! [MAX6625]: https://datasheets.maximintegrated.com/en/ds/MAX6625-MAX6626.pdf
-//! [MAX7300/1/2/3/4]: https://datasheets.maximintegrated.com/en/ds/MAX7300-MAX7304.pdf
-//! [MCP9800/1/2/3]: http://ww1.microchip.com/downloads/en/DeviceDoc/21909d.pdf
-//! [STDS73]: https://www.st.com/resource/en/datasheet/stds73.pdf
-//! [TCN73]: http://ww1.microchip.com/downloads/en/DeviceDoc/21490D.pdf
 //!
 //! ## Usage examples (see also examples folder)
 //!
 //! To use this driver, import this crate and an `embedded_hal` implementation,
 //! then instantiate the device.
-//!
-//! Please find additional examples in this repository: [lm73-examples]
-//!
-//! [lm73-examples]: https://github.com/eldruin/lm73-examples
 //!
 //! ### Read temperature
 //!
@@ -66,12 +32,12 @@
 //! extern crate lm73;
 //!
 //! use hal::I2cdev;
-//! use lm73::{ lm73, SlaveAddr };
+//! use lm73::{ Lm73, SlaveAddr };
 //!
 //! # fn main() {
 //! let dev = I2cdev::new("/dev/i2c-1").unwrap();
 //! let address = SlaveAddr::default();
-//! let mut sensor = lm73::new(dev, address);
+//! let mut sensor = Lm73::new(dev, address);
 //! let temp_celsius = sensor.read_temperature().unwrap();
 //! println!("Temperature: {}ºC", temp_celsius);
 //! # }
@@ -84,98 +50,47 @@
 //! extern crate lm73;
 //!
 //! use hal::I2cdev;
-//! use lm73::{ lm73, SlaveAddr };
+//! use lm73::{ Lm73, SlaveAddr };
 //!
 //! # fn main() {
 //! let dev = I2cdev::new("/dev/i2c-1").unwrap();
 //! let (a2, a1, a0) = (false, false, true);
 //! let address = SlaveAddr::Alternative(a2, a1, a0);
-//! let mut sensor = lm73::new(dev, address);
+//! let mut sensor = Lm73::new(dev, address);
 //! # }
 //! ```
 //!
-//! ### Set the fault queue
 //!
-//! This is the number of consecutive faults necessary to trigger
-//! an OS condition.
+//! ### Set the OneShot operation mode
 //!
 //! ```no_run
 //! extern crate linux_embedded_hal as hal;
 //! extern crate lm73;
 //!
 //! use hal::I2cdev;
-//! use lm73::{ lm73, SlaveAddr, FaultQueue };
+//! use lm73::{ Lm73, SlaveAddr, OsMode };
 //!
 //! # fn main() {
 //! let dev = I2cdev::new("/dev/i2c-1").unwrap();
-//! let mut sensor = lm73::new(dev, SlaveAddr::default());
-//! sensor.set_fault_queue(FaultQueue::_4).unwrap();
+//! let mut sensor = Lm73::new(dev, SlaveAddr::default());
+//! sensor.set_os_mode(OsMode::Enabled).unwrap();
 //! # }
 //! ```
 //!
-//! ### Set the OS polarity
+//! ### Set the HIGH_TEMP temperature
 //!
 //! ```no_run
 //! extern crate linux_embedded_hal as hal;
 //! extern crate lm73;
 //!
 //! use hal::I2cdev;
-//! use lm73::{ lm73, SlaveAddr, OsPolarity };
+//! use lm73::{ Lm73, SlaveAddr };
 //!
 //! # fn main() {
 //! let dev = I2cdev::new("/dev/i2c-1").unwrap();
-//! let mut sensor = lm73::new(dev, SlaveAddr::default());
-//! sensor.set_os_polarity(OsPolarity::ActiveHigh).unwrap();
-//! # }
-//! ```
-//!
-//! ### Set the OS operation mode
-//!
-//! ```no_run
-//! extern crate linux_embedded_hal as hal;
-//! extern crate lm73;
-//!
-//! use hal::I2cdev;
-//! use lm73::{ lm73, SlaveAddr, OsMode };
-//!
-//! # fn main() {
-//! let dev = I2cdev::new("/dev/i2c-1").unwrap();
-//! let mut sensor = lm73::new(dev, SlaveAddr::default());
-//! sensor.set_os_mode(OsMode::Interrupt).unwrap();
-//! # }
-//! ```
-//!
-//! ### Set the OS temperature
-//!
-//! ```no_run
-//! extern crate linux_embedded_hal as hal;
-//! extern crate lm73;
-//!
-//! use hal::I2cdev;
-//! use lm73::{ lm73, SlaveAddr };
-//!
-//! # fn main() {
-//! let dev = I2cdev::new("/dev/i2c-1").unwrap();
-//! let mut sensor = lm73::new(dev, SlaveAddr::default());
+//! let mut sensor = Lm73::new(dev, SlaveAddr::default());
 //! let temp_celsius = 50.0;
-//! sensor.set_os_temperature(temp_celsius).unwrap();
-//! # }
-//! ```
-//!
-//! ### Set the hysteresis temperature
-//!
-//! ```no_run
-//! extern crate linux_embedded_hal as hal;
-//! extern crate lm73;
-//!
-//! use hal::I2cdev;
-//! use lm73::{ lm73, SlaveAddr };
-//!
-//! # fn main() {
-//! let dev = I2cdev::new("/dev/i2c-1").unwrap();
-//! let mut sensor = lm73::new(dev, SlaveAddr::default());
-//! let temp_celsius = 40.0;
-//! sensor.set_hysteresis_temperature(temp_celsius).unwrap();
+//! sensor.set_temperature_high(temp_celsius).unwrap();
 //! # }
 //! ```
 //!
@@ -186,11 +101,11 @@
 //! extern crate lm73;
 //!
 //! use hal::I2cdev;
-//! use lm73::{ lm73, SlaveAddr };
+//! use lm73::{ Lm73, SlaveAddr };
 //!
 //! # fn main() {
 //! let dev = I2cdev::new("/dev/i2c-1").unwrap();
-//! let mut sensor = lm73::new(dev, SlaveAddr::default());
+//! let mut sensor = Lm73::new(dev, SlaveAddr::default());
 //! sensor.disable().unwrap(); // shutdown
 //! sensor.enable().unwrap();
 //! # }
@@ -199,11 +114,10 @@
 //#![deny(missing_docs, unsafe_code, warnings)]
 //#![no_std]
 
-extern crate i2cdev;
 extern crate embedded_hal as hal;
+extern crate i2cdev;
 
 use hal::blocking::i2c;
-use i2cdev::core::*;
 
 /// All possible errors in this crate
 #[derive(Debug)]
@@ -220,7 +134,7 @@ pub enum SlaveAddr {
     /// Default slave address
     Default,
     /// Alternative slave address providing bit values for A2, A1 and A0
-    Alternative(bool, bool, bool)
+    Alternative(bool, bool, bool),
 }
 
 impl Default for SlaveAddr {
@@ -234,14 +148,12 @@ impl SlaveAddr {
     fn addr(self, default: u8) -> u8 {
         match self {
             SlaveAddr::Default => default,
-            SlaveAddr::Alternative(a2, a1, a0) => default           |
-                                                  ((a2 as u8) << 2) |
-                                                  ((a1 as u8) << 1) |
-                                                    a0 as u8
+            SlaveAddr::Alternative(a2, a1, a0) => {
+                default | ((a2 as u8) << 2) | ((a1 as u8) << 1) | a0 as u8
+            }
         }
     }
 }
-
 
 /// Resolution of temperature
 ///
@@ -258,15 +170,13 @@ pub enum Resolution {
     _14,
 }
 
-
-
 /// OS polarity
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum OsPolarity {
     /// Active low (default)
     ActiveLow,
     /// Active high
-    ActiveHigh
+    ActiveHigh,
 }
 
 /// OneShot operation mode
@@ -275,7 +185,7 @@ pub enum OsMode {
     /// Disabled (default)
     Disabled,
     /// Enabled
-    Enabled
+    Enabled,
 }
 
 /// Alert Enable operation mode
@@ -284,38 +194,34 @@ pub enum AlertEnable {
     /// Disabled (default)
     Disabled,
     /// Enabled
-    Enabled
+    Enabled,
 }
 
-
-const DEVICE_BASE_ADDRESS: u8 = 0b100_1001;
+const DEVICE_BASE_ADDRESS: u8 = 0b100_1000;
 
 struct Register;
 
 impl Register {
-    const TEMPERATURE    : u8 = 0x00;
-    const CONFIGURATION  : u8 = 0x01;
-    const T_HIGH         : u8 = 0x02;
-    const T_LOW          : u8 = 0x03;
-    const CONTROL_STATUS : u8 = 0x04;
-    const IDENTIFICATION : u8 = 0x07;
+    const TEMPERATURE: u8 = 0x00;
+    const CONFIGURATION: u8 = 0x01;
+    const T_HIGH: u8 = 0x02;
+    const T_LOW: u8 = 0x03;
+    const CONTROL_STATUS: u8 = 0x04;
+    const IDENTIFICATION: u8 = 0x07;
 }
-
 
 struct ConfigBitFlags;
 
 impl ConfigBitFlags {
- //   const RESERVED0_0 : u8 = 0b0000_0001;
- //   const RESERVED1_0 : u8 = 0b0000_0010;
-    const ONE_SHOT    : u8 = 0b0000_0100;
-    const ALRT_RST    : u8 = 0b0000_1000;
-    const ALRT_POL    : u8 = 0b0001_0000;
-    const ALRT_EN     : u8 = 0b0010_0000;    
- //   const RESERVED6_1 : u8 = 0b0100_0000;
-    const PD          : u8 = 0b1000_0000;
+    //   const RESERVED0_0 : u8 = 0b0000_0001;
+    //   const RESERVED1_0 : u8 = 0b0000_0010;
+    const ONE_SHOT: u8 = 0b0000_0100;
+    const ALRT_RST: u8 = 0b0000_1000;
+    const ALRT_POL: u8 = 0b0001_0000;
+    const ALRT_EN: u8 = 0b0010_0000;
+    //   const RESERVED6_1 : u8 = 0b0100_0000;
+    const PD: u8 = 0b1000_0000;
 }
-
-
 
 #[derive(Debug, Clone, Copy)]
 struct Config {
@@ -341,20 +247,18 @@ impl Default for Config {
     }
 }
 
-
 struct CsrBitFlags;
 
 impl CsrBitFlags {
- //   const DAV         : u8 = 0b0000_0001;
- //   const TLOW        : u8 = 0b0000_0010;
- //   const THI         : u8 = 0b0000_0100;
- //   const ALRT_STAT   : u8 = 0b0000_1000;
- //   const RESERVED4_0 : u8 = 0b0001_0000;
-    const RES0        : u8 = 0b0010_0000;
-    const RES1        : u8 = 0b0100_0000;
- //   const TO_DIS      : u8 = 0b1000_0000;
+    //   const DAV         : u8 = 0b0000_0001;
+    //   const TLOW        : u8 = 0b0000_0010;
+    //   const THI         : u8 = 0b0000_0100;
+    //   const ALRT_STAT   : u8 = 0b0000_1000;
+    //   const RESERVED4_0 : u8 = 0b0001_0000;
+    const RES0: u8 = 0b0010_0000;
+    const RES1: u8 = 0b0100_0000;
+    //   const TO_DIS      : u8 = 0b1000_0000;
 }
-
 
 #[derive(Debug, Clone, Copy)]
 struct Csr {
@@ -395,9 +299,9 @@ pub struct Lm73<I2C> {
 
 mod conversion;
 
-impl<I2C,E> Lm73<I2C>
+impl<I2C, E> Lm73<I2C>
 where
-    I2C: i2c::Write<Error = E> 
+    I2C: i2c::Write<Error = E>,
 {
     /// Create new instance of the lm73 device.
     pub fn new(i2c: I2C, address: SlaveAddr) -> Self {
@@ -405,10 +309,9 @@ where
             i2c,
             address: address.addr(DEVICE_BASE_ADDRESS),
             config: Config::default(),
-            csr: Csr::default()
+            csr: Csr::default(),
         }
     }
-
 
     /// Destroy driver instance, return I²C bus instance.
     pub fn destroy(self) -> I2C {
@@ -418,8 +321,7 @@ where
     /// Enable the sensor (default state).
     pub fn enable(&mut self) -> Result<(), Error<E>> {
         let csr = self.csr;
-        let result = self.write_csr(csr)?;
-        //if result.is_err() {return result}
+        let _result = self.write_csr(csr)?;
 
         let config = self.config;
         self.write_config(config.with_low(ConfigBitFlags::PD))
@@ -437,20 +339,28 @@ where
     pub fn set_resolution(&mut self, res: Resolution) -> Result<(), Error<E>> {
         let csr = self.csr;
         match res {
-            Resolution::_11 => self.write_csr(csr.with_low(CsrBitFlags::RES1).with_low( CsrBitFlags::RES0)),
-            Resolution::_12 => self.write_csr(csr.with_low(CsrBitFlags::RES1).with_high(CsrBitFlags::RES0)),
-            Resolution::_13 => self.write_csr(csr.with_high(CsrBitFlags::RES1).with_low(CsrBitFlags::RES0)),
-            Resolution::_14 => self.write_csr(csr.with_high(CsrBitFlags::RES1).with_high(CsrBitFlags::RES0)),
+            Resolution::_11 => {
+                self.write_csr(csr.with_low(CsrBitFlags::RES1).with_low(CsrBitFlags::RES0))
+            }
+            Resolution::_12 => {
+                self.write_csr(csr.with_low(CsrBitFlags::RES1).with_high(CsrBitFlags::RES0))
+            }
+            Resolution::_13 => {
+                self.write_csr(csr.with_high(CsrBitFlags::RES1).with_low(CsrBitFlags::RES0))
+            }
+            Resolution::_14 => self.write_csr(
+                csr.with_high(CsrBitFlags::RES1)
+                    .with_high(CsrBitFlags::RES0),
+            ),
         }
     }
 
-   
     /// Set the OneShot operation mode.
     pub fn set_os_mode(&mut self, mode: OsMode) -> Result<(), Error<E>> {
         let config = self.config;
         match mode {
             OsMode::Enabled => self.write_config(config.with_high(ConfigBitFlags::ONE_SHOT)),
-            OsMode::Disabled  => self.write_config(config.with_low(ConfigBitFlags::ONE_SHOT)),
+            OsMode::Disabled => self.write_config(config.with_low(ConfigBitFlags::ONE_SHOT)),
         }
     }
 
@@ -464,7 +374,7 @@ where
     pub fn set_alert_polarity(&mut self, polarity: OsPolarity) -> Result<(), Error<E>> {
         let config = self.config;
         match polarity {
-            OsPolarity::ActiveLow  => self.write_config(config.with_low(ConfigBitFlags::ALRT_POL)),
+            OsPolarity::ActiveLow => self.write_config(config.with_low(ConfigBitFlags::ALRT_POL)),
             OsPolarity::ActiveHigh => self.write_config(config.with_high(ConfigBitFlags::ALRT_POL)),
         }
     }
@@ -473,7 +383,7 @@ where
     pub fn set_alert_enable(&mut self, enabled: AlertEnable) -> Result<(), Error<E>> {
         let config = self.config;
         match enabled {
-            AlertEnable::Disabled  => self.write_config(config.with_high(ConfigBitFlags::ALRT_EN)),
+            AlertEnable::Disabled => self.write_config(config.with_high(ConfigBitFlags::ALRT_EN)),
             AlertEnable::Enabled => self.write_config(config.with_low(ConfigBitFlags::ALRT_EN)),
         }
     }
@@ -484,7 +394,7 @@ where
             return Err(Error::InvalidInputData);
         }
         let (msb, lsb) = conversion::convert_temp_to_register(temperature);
-        let data : u16 = (msb as u16 * 256 as u16 + lsb as u16).into();
+        let _data: u16 = (msb as u16 * 256 as u16 + lsb as u16).into();
         self.i2c
             .write(Register::T_HIGH, &[msb, lsb])
             .map_err(Error::I2C)
@@ -496,12 +406,11 @@ where
             return Err(Error::InvalidInputData);
         }
         let (msb, lsb) = conversion::convert_temp_to_register(temperature);
-        let data : u16 = (msb as u16 * 256 as u16 + lsb as u16).into();
+        let _data: u16 = (msb as u16 * 256 as u16 + lsb as u16).into();
         self.i2c
-            .write(Register::T_HIGH, &[msb, lsb])
+            .write(Register::T_LOW, &[msb, lsb])
             .map_err(Error::I2C)
     }
-
 
     fn write_config(&mut self, config: Config) -> Result<(), Error<E>> {
         self.i2c
@@ -510,7 +419,7 @@ where
         self.config = config;
         Ok(())
     }
-    
+
     fn write_csr(&mut self, csr: Csr) -> Result<(), Error<E>> {
         self.i2c
             .write(Register::CONTROL_STATUS, &[csr.bits])
@@ -520,11 +429,9 @@ where
     }
 }
 
-
-
 impl<I2C, E> Lm73<I2C>
 where
-    I2C: i2c::WriteRead<Error = E>
+    I2C: i2c::WriteRead<Error = E>,
 {
     /// Read the temperature from the sensor (celsius).
     pub fn read_temperature(&mut self) -> Result<f32, Error<E>> {
@@ -535,18 +442,14 @@ where
         Ok(conversion::convert_temp_from_register(data[0], data[1]))
     }
 
-
-    /// Read the temperature from the sensor (celsius).
-    pub fn read_identification(&mut self) -> Result<f32, Error<E>> {
+    /// Read the identification sensor register.
+    pub fn read_identification(&mut self) -> Result<u16, Error<E>> {
         let mut data = [0; 2];
         self.i2c
-            .write_read(self.address,      
-                        &[Register::IDENTIFICATION],
-                        &mut data)
+            .write_read(self.address, &[Register::IDENTIFICATION], &mut data)
             .map_err(Error::I2C)?;
 
-            
-        Ok(conversion::convert_temp_from_register(data[0], data[1]))
+        Ok( (data[0] as u16) << 8 + data[1])
     }
 }
 
@@ -562,11 +465,25 @@ mod tests {
 
     #[test]
     fn can_generate_alternative_addresses() {
-        assert_eq!(0b100_1000, SlaveAddr::Alternative(false, false, false).addr(DEVICE_BASE_ADDRESS));
-        assert_eq!(0b100_1001, SlaveAddr::Alternative(false, false,  true).addr(DEVICE_BASE_ADDRESS));
-        assert_eq!(0b100_1010, SlaveAddr::Alternative(false,  true, false).addr(DEVICE_BASE_ADDRESS));
-        assert_eq!(0b100_1100, SlaveAddr::Alternative( true, false, false).addr(DEVICE_BASE_ADDRESS));
-        assert_eq!(0b100_1101, SlaveAddr::Alternative( true, false,  true).addr(DEVICE_BASE_ADDRESS));
-        assert_eq!(0b100_1110, SlaveAddr::Alternative( true,  true, false).addr(DEVICE_BASE_ADDRESS));
+        assert_eq!(
+            0b100_1001,
+            SlaveAddr::Alternative(false, false, true).addr(DEVICE_BASE_ADDRESS)
+        );
+        assert_eq!(
+            0b100_1010,
+            SlaveAddr::Alternative(false, true, false).addr(DEVICE_BASE_ADDRESS)
+        );
+        assert_eq!(
+            0b100_1100,
+            SlaveAddr::Alternative(true, false, false).addr(DEVICE_BASE_ADDRESS)
+        );
+        assert_eq!(
+            0b100_1101,
+            SlaveAddr::Alternative(true, false, true).addr(DEVICE_BASE_ADDRESS)
+        );
+        assert_eq!(
+            0b100_1110,
+            SlaveAddr::Alternative(true, true, false).addr(DEVICE_BASE_ADDRESS)
+        );
     }
 }
